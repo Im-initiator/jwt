@@ -4,6 +4,7 @@ package com.leminhtien.jwt.auth;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,13 +22,17 @@ public class AuthenticationController {
     ResponseEntity<AuthenticationResponse> register(
             @RequestBody RegisterRequest request
     ){
-        return ResponseEntity.ok(authenticationService.register(request));
+        AuthenticationResponse au = authenticationService.register(request);
+        System.out.println("--------------------------------"+ SecurityContextHolder.getContext().getAuthentication());
+        return ResponseEntity.ok(au);
     }
     @PostMapping("/authenticated")
     ResponseEntity<AuthenticationResponse> login(
             @RequestBody AuthenticationRequest request
     ){
-        return ResponseEntity.ok(authenticationService.authentication(request));
+        AuthenticationResponse au = authenticationService.authentication(request);
+        System.out.println("--------------------------------"+ SecurityContextHolder.getContext().getAuthentication());
+        return ResponseEntity.ok(au);
     }
 
 

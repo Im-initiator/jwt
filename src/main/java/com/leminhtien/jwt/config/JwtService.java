@@ -78,10 +78,12 @@ public class JwtService {
         return (userDetails.getUsername().equals(userName)&& !isTokenExpired(token));
     }
 
+    //Kiểm tra token đã hết hạn chưa
     private boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
     }
 
+    //Lấy ra ngày hết hạn
     private Date extractExpiration(String token) {
         return extractClaim(token,Claims::getExpiration);
     }

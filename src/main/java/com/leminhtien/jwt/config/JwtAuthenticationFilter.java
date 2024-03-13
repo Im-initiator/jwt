@@ -24,13 +24,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
     private final UserDetailsService userDetailsServices;
 
+
+    /*filter này chỉ áp dụng với những request có token ở header. Nếu token hợp lệ sẽ tự động
+    * Login bằng cách tìm một user ở CSDL có email trùng khớp sau đó tự động login với user được lấy lên*/
     @Override
     protected void doFilterInternal(
          @NonNull HttpServletRequest request,
          @NonNull   HttpServletResponse response,
          @NonNull   FilterChain filterChain
     ) throws ServletException, IOException {
-        System.out.println("-----------------"+SecurityContextHolder.getContext().getAuthentication());
         final  String authHeader = request.getHeader("Authorization");
         final  String jwt;
         final  String userEmail;
@@ -38,19 +40,25 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request,response);
             return;
         }
+        //tách header token
         jwt = authHeader.substring(7);
         userEmail = jwtService.extractUserName(jwt);
+        //Nếu lấy được email từ token và chưa đăng nhập thì  xác thực email
         if (userEmail!=null && SecurityContextHolder.getContext().getAuthentication() == null){
             UserDetails userDetails = this.userDetailsServices.loadUserByUsername(userEmail);
+            //Kiểm tra nếu email hợp lệ thì tự động login
             if (jwtService.isTokenValid(jwt,userDetails)){
+                //login
                 UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                         userDetails,
                         null,
                         userDetails.getAuthorities()
                 );
+                //thiết lập trạng thái trình duyệt
                 authenticationToken.setDetails(
                         new WebAuthenticationDetailsSource().buildDetails(request)
                 );
+                //Thiết lập UsernamePasswordAuthenticationToken vào SecurityContext = đăng nhập
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
             }
         }

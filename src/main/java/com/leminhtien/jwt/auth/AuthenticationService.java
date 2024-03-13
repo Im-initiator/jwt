@@ -35,12 +35,17 @@ public class AuthenticationService {
     }
 
     public AuthenticationResponse authentication(AuthenticationRequest request) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getEmail(),
-                        request.getPassword()
-                )
-        );
+        //tiến hành xác thực nếu có lỗi thì xảy ra ngoại lệ.
+   //     try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.getEmail(),
+                            request.getPassword()
+                    )
+            );
+//        }catch (Exception e){
+//            e.printStackTrace();
+//        }
         var user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow();
         var jwtToken = jwtService.generateToken(user);
