@@ -23,7 +23,7 @@ public class AuthenticationController {
             @RequestBody RegisterRequest request
     ){
         AuthenticationResponse au = authenticationService.register(request);
-        System.out.println("--------------------------------"+ SecurityContextHolder.getContext().getAuthentication());
+    //    System.out.println("--------------------------------"+ SecurityContextHolder.getContext().getAuthentication());
         return ResponseEntity.ok(au);
     }
     @PostMapping("/authenticated")
@@ -31,7 +31,7 @@ public class AuthenticationController {
             @RequestBody AuthenticationRequest request
     ){
         AuthenticationResponse au = authenticationService.authentication(request);
-        System.out.println("--------------------------------"+ SecurityContextHolder.getContext().getAuthentication());
+   //     System.out.println("--------------------------------"+ SecurityContextHolder.getContext().getAuthentication());
         return ResponseEntity.ok(au);
     }
 
