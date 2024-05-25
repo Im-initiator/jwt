@@ -1,15 +1,16 @@
 package com.leminhtien.jwt.user;
 
+import com.leminhtien.jwt.token.Token;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -27,6 +28,9 @@ public class User implements UserDetails {
     private String email;
     @Column
     private String password;
+
+    @OneToMany(mappedBy = "user")
+    private List<Token> tokens = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)//cách ánh xạ khi lưu vào csdl
     private Role role;

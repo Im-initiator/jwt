@@ -19,7 +19,7 @@ public class SecurityConfiguration {
 
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final AuthenticationProvider authenticationProvider;
-
+    private final LogoutService logoutService;
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
@@ -36,7 +36,12 @@ public class SecurityConfiguration {
               .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
               .and()
               .authenticationProvider(authenticationProvider)
-              .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+              .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+              .logout()
+              .logoutUrl("/api/v1/auth/logout")
+              .addLogoutHandler(logoutService)
+              .logoutSuccessHandler(((request, response, authentication) -> SecurityContextHolder.clearContext()))
+      ;
       return  http.build();
   }
 

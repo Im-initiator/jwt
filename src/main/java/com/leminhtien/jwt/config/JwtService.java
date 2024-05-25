@@ -5,12 +5,11 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import org.springframework.aop.MethodBeforeAdvice;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.security.Key;
-import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -19,11 +18,18 @@ import java.util.function.Function;
 @Service
 public class JwtService {
 
-    private static final String SECRECT_KEY = "e61ff531bcdb5c96be3df4b390233264e35d1453b1ced0b162a70de2173e712e";
+    @Value("${application.security.jwt.secret-key}")
+    private  String SECRET_KEY;
+
+    @Value("${application.security.jwt.expiration}")
+    private long jwtExpiration;
+
+    @Value("${application.security.jwt.refresh-token.expiration}")
+    private long refreshJwtExpiration;
 
     //Tạo khóa
     private Key getSignInKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(SECRECT_KEY);//chuyển khóa thành một mảng bytes
+        byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);//chuyển khóa thành một mảng bytes
         return Keys.hmacShaKeyFor(keyBytes);//tạo và tả về một khóa dạng SHA dùng để tạo chữ ký và xác minh JWT
         //Key là một lớp cung cấp các method tạo quá và chữ ký.
     }
@@ -33,20 +39,40 @@ public class JwtService {
         return generateToken(new HashMap<>(),userDetails);//HasMap chứa thông tin muốn cho vào jwt có thể là role(list) hoặc hơn nữa.
     }
 
+    public String generateRefreshToken(UserDetails userDetails){
+        return generateRefreshToken(new HashMap<>(),userDetails);//HasMap chứa thông tin muốn cho vào jwt có thể là role(list) hoặc hơn nữa.
+    }
+
     //Tạo token
     public String generateToken(
             Map<String,Object> extractClaims,
             UserDetails userDetails
     ){
-        return Jwts
-                .builder()
-                .setClaims(extractClaims)
-                .setSubject(userDetails.getUsername()) //thiết lập subject là userName
-                .setIssuedAt(new Date(System.currentTimeMillis())) //thiết lập ngày tạo
-                .setExpiration(new Date(System.currentTimeMillis()+1000 * 60 * 24)) //thiết lập ngày hết hạn
-                .signWith(getSignInKey(), SignatureAlgorithm.HS256) //thiết lập khóa
-                .compact();
+        return buildToken(extractClaims,userDetails,jwtExpiration);
 
+    }
+
+    public String generateRefreshToken(
+            Map<String,Object> extractClaims,
+            UserDetails userDetails
+    ){
+        return buildToken(extractClaims,userDetails,refreshJwtExpiration);
+
+    }
+
+    private String buildToken(Map<String,Object> extractClaims,
+                              UserDetails userDetails,
+                              long expiration)
+    {
+        return
+                Jwts
+                        .builder()
+                        .setClaims(extractClaims)
+                        .setSubject(userDetails.getUsername()) //thiết lập subject là userName
+                        .setIssuedAt(new Date(System.currentTimeMillis())) //thiết lập ngày tạo
+                        .setExpiration(new Date(System.currentTimeMillis()+expiration)) //thiết lập ngày hết hạn
+                        .signWith(getSignInKey(), SignatureAlgorithm.HS256) //thiết lập khóa
+                        .compact();
     }
 
 

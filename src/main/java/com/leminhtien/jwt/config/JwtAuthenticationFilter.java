@@ -1,5 +1,6 @@
 package com.leminhtien.jwt.config;
 
+import com.leminhtien.jwt.repository.TokenRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,6 +24,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final UserDetailsService userDetailsServices;
+    private final TokenRepository tokenRepository;
 
 
     /*filter này chỉ áp dụng với những request có token ở header. Nếu token hợp lệ sẽ tự động
@@ -46,8 +48,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         //Nếu lấy được email từ token và chưa đăng nhập thì  xác thực email
         if (userEmail!=null && SecurityContextHolder.getContext().getAuthentication() == null){
             UserDetails userDetails = this.userDetailsServices.loadUserByUsername(userEmail);
+           boolean isTokenValid = tokenRepository.findByToken(jwt)
+                   .map(t-> !t.isExpired() && !t.isRevoked())
+                   .orElse(false);
             //Kiểm tra nếu email hợp lệ thì tự động login
-            if (jwtService.isTokenValid(jwt,userDetails)){
+            if (jwtService.isTokenValid(jwt,userDetails)&& isTokenValid){
                 //login
                 UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                         userDetails,
